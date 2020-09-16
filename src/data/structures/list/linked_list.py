@@ -9,7 +9,7 @@ class LinkedList:
     def add_last(self, data):
         if self.head:
             node = Node(data, prev_node=self.tail)
-            self.tail.next = node
+            self.tail.next_node = node
             self.tail = node
             self.length += 1
         else:
@@ -18,7 +18,7 @@ class LinkedList:
     def add_first(self, data):
         if self.head:
             node = Node(data, next_node=self.head)
-            self.head.previous = node
+            self.head.prev_node = node
             self.head = node
             self.length += 1
         else:
@@ -30,7 +30,7 @@ class LinkedList:
     def find_node(self, data):
         node = self.head
         while node and node.data != data:
-            node = node.next
+            node = node.next_node
 
         return node if node else None
 
@@ -39,8 +39,9 @@ class LinkedList:
         self.tail = self.head
         self.length = 1
 
+
 class Node:
     def __init__(self, data, next_node=None, prev_node=None):
         self.data = data
-        self.next = next_node
-        self.previous = prev_node
+        self.next_node = next_node
+        self.prev_node = prev_node
