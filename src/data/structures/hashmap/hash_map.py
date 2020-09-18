@@ -1,72 +1,98 @@
 class HashMap:
     def __init__(self, min_buckets=16, load_factor=.75):
         self.min_buckets = min_buckets
-        self.buckets = [HashNode()] * min_buckets
+        self.buckets = [LinkedList() for _ in range(min_buckets)]
         self.load_factor = load_factor
         self.size = 0
 
+    def clear(self):
+        for bucket in self.buckets:
+            bucket.clear()
+        self.size = 0
+
     def contains_key(self, key):
-        return not self.get_node(key) is None
+        return self.buckets[self.get_index(key)].get(key) is not None
+
+    def get(self, key):
+        return self.buckets[self.get_index(key)].get(key)
+
+    def put(self, key, value):
+        if not self.contains_key(key):
+            self.size += 1
+        self.buckets[self.get_index(key)].put(key=key, value=value)
+
+    def remove(self, key):
+        index = calculate_hash(len(self.buckets), key)
+        if self.buckets[index].remove(key):
+            self.size -= 1
+
+    def get_index(self, key):
+        return calculate_hash(len(self.buckets), key)
+
+
+def calculate_hash(num_buckets, key):
+    return hash(key) % num_buckets
+
+
+class LinkedList:
+    def __init__(self, key=None, value=None):
+        self.head = HashNode(key, value)
+        self.tail = self.head
+
+    def clear(self):
+        self.head = HashNode()
+        self.tail = self.head
 
     def get(self, key):
         node = self.get_node(key)
-        return node.value if node else None
+        return node.value if node and node.key == key else None
 
     def get_node(self, key):
-        index = calculate_hash(len(self.buckets), key)
-        node = self.buckets[index]
-
+        node = self.head
         while node.key != key and node.next_node:
             node = node.next_node
 
         return node if node.key == key else None
 
     def put(self, key, value):
-        if self.should_increase_size(key):
-            self.increase_size
+        node = self.head
+        if not node.key and node.key != 0:
+            node.key = key
+            node.value = value
+            return
 
-        node = self.get_node(key)
-        if node:
+        while node.key != key and node.next_node:
+            node = node.next_node
+
+        if node.key == key:
             node.value = value
         else:
-            index = calculate_hash(len(self.buckets), key)
-            node = self.buckets[index]
-            if not node.key:
-                node.key = key
-                node.value = value
-            new_node = HashNode(key=key, value=value, next_node=node)
-            self.buckets[index] = new_node
+            new_node = HashNode(key=key, value=value, prev_node=self.tail)
+            self.tail.next_node = new_node
+            self.tail = new_node
 
     def remove(self, key):
-        if self.should_decrease_size(key):
-            self.decrease_size
-
-    def should_increase_size(self, key):
-        return not self.contains_key(key) and self.size / len(self.buckets) >= self.load_factor
-
-    def should_decrease_size(self, key):
-        return self.contains_key(key) and \
-               (self.size - 1) / len(self.buckets) <= self.load_factor and \
-               len(self.buckets) > self.min_buckets
-
-    def increase_size(self):
-        pass
-
-    def decrease_size(self):
-        pass
-
-
-def calculate_hash(num_buckets, key):
-    return hash(key) % num_buckets
-
-#
-# class LinkedHashNodeList:
-#     def __init__(self):
-
+        node = self.get_node(key)
+        if not node:
+            return False
+        if node == self.head and node == self.tail:
+            node.key = None
+            node.value = None
+        elif node == self.head:
+            node.next_node.prev_node = None
+            self.head = node.next_node
+        elif node == self.tail:
+            node.prev_node.next_node = None
+            self.tail = node.prev_node
+        else:
+            node.prev_node.next_node = node.next_node
+            node.next_node.prev_node = node.prev_node
+        return True
 
 
 class HashNode:
-    def __init__(self, key=None, value=None, next_node=None):
+    def __init__(self, key=None, value=None, next_node=None, prev_node=None):
         self.key = key
         self.value = value
         self.next_node = next_node
+        self.prev_node = prev_node

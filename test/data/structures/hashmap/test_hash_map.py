@@ -21,4 +21,28 @@ class TestHashMap:
         assert self.hashmap.contains_key("John")
 
     def test_remove(self):
-        pass
+        assert self.hashmap.size == 2
+        self.hashmap.remove("Jared")
+        assert not self.hashmap.contains_key("Jared")
+        assert self.hashmap.size == 1
+
+    def test_clear(self):
+        assert self.hashmap.contains_key("Jared")
+        assert self.hashmap.contains_key("John")
+        self.hashmap.clear()
+        assert self.hashmap.size == 0
+        assert not self.hashmap.contains_key("Jared")
+        assert not self.hashmap.contains_key("John")
+
+    def test_large_size(self):
+        self.hashmap.clear()
+        num_range = 1000
+        for i in range(num_range):
+            self.hashmap.put(i, i * 2)
+
+        assert self.hashmap.size == num_range
+        for i in range(num_range):
+            assert self.hashmap.get(i) == i * 2
+            self.hashmap.remove(i)
+            assert not self.hashmap.contains_key(i)
+        assert self.hashmap.size == 0
