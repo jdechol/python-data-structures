@@ -46,3 +46,16 @@ class TestHashMap:
             self.hashmap.remove(i)
             assert not self.hashmap.contains_key(i)
         assert self.hashmap.size == 0
+
+    def test_the_thing(self):
+        num_range = 100000
+        maps = {}
+        for i in range(num_range):
+            maps[i] = i * 2
+
+        assert len(maps) == num_range
+        for i in range(num_range):
+            assert maps[i] == i * 2
+            maps.pop(i)
+            assert not maps.get(i)
+        assert len(maps) == 0

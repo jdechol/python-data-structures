@@ -1,5 +1,5 @@
 class HashMap:
-    def __init__(self, min_buckets=16, load_factor=.75):
+    def __init__(self, min_buckets=16, load_factor=4):
         self.min_buckets = min_buckets
         self.buckets = [LinkedList() for _ in range(min_buckets)]
         self.load_factor = load_factor
@@ -19,15 +19,31 @@ class HashMap:
     def put(self, key, value):
         if not self.contains_key(key):
             self.size += 1
+            self.adjust_bucket_size_if_necessary()
         self.buckets[self.get_index(key)].put(key=key, value=value)
 
     def remove(self, key):
         index = calculate_hash(len(self.buckets), key)
         if self.buckets[index].remove(key):
             self.size -= 1
+            self.adjust_bucket_size_if_necessary()
 
     def get_index(self, key):
         return calculate_hash(len(self.buckets), key)
+
+    def adjust_bucket_size_if_necessary(self):
+        factor = self.size / len(self.buckets)
+        if factor > self.load_factor:
+            self.resize_buckets(len(self.buckets) * 2)
+        elif factor < (1 - self.load_factor):
+            self.resize_buckets(len(self.buckets) // 2)
+
+    def resize_buckets(self, num_buckets):
+        buckets = [LinkedList() for _ in range(num_buckets)]
+        for bucket in self.buckets:
+            for key, value in bucket:
+                buckets[calculate_hash(num_buckets, key)].put(key=key, value=value)
+        self.buckets = buckets
 
 
 def calculate_hash(num_buckets, key):
@@ -88,6 +104,14 @@ class LinkedList:
             node.prev_node.next_node = node.next_node
             node.next_node.prev_node = node.prev_node
         return True
+
+    def __iter__(self):
+        node = self.head
+        while True:
+            yield node.key, node.value
+            if not node.next_node:
+                break
+            node = node.next_node
 
 
 class HashNode:
